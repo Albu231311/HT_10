@@ -57,6 +57,7 @@ def inicializar_matrices(ciudades, aristas, condicion_climatica=0):
     # Retornar las matrices y el diccionario de índices de ciudades
     return dist, siguiente_ciudad, indice_ciudad
 
+    # Implementar el algoritmo de Floyd-Warshall para encontrar las rutas más cortas
 def floyd_warshall(dist, siguiente_ciudad, n):
     for k in range(n):
         for i in range(n):
@@ -65,6 +66,7 @@ def floyd_warshall(dist, siguiente_ciudad, n):
                     dist[i][j] = dist[i][k] + dist[k][j]
                     siguiente_ciudad[i][j] = siguiente_ciudad[i][k]
 
+    # Construir el camino más corto entre dos ciudades utilizando la matriz de siguiente ciudad
 def construir_camino(siguiente_ciudad, indice_ciudad, inicio, fin):
     if siguiente_ciudad[indice_ciudad[inicio]][indice_ciudad[fin]] is None:
         return None
@@ -76,19 +78,22 @@ def construir_camino(siguiente_ciudad, indice_ciudad, inicio, fin):
     
     return camino
 
+# Encontrar el centro del grafo calculando la excentricidad de cada ciudad
 def encontrar_centro_grafo(dist, ciudades):
     excentricidad = [max(fila) for fila in dist]
     min_excentricidad = min(excentricidad)
     centro = ciudades[excentricidad.index(min_excentricidad)]
     return centro
 
+# Actualizar el grafo con nuevos tiempos de viaje entre dos ciudades
 def actualizar_grafo(dist, siguiente_ciudad, indice_ciudad, ciudad1, ciudad2, tiempos, condicion_climatica):
     i, j = indice_ciudad[ciudad1], indice_ciudad[ciudad2]
     dist[i][j] = tiempos[condicion_climatica]
     dist[j][i] = tiempos[condicion_climatica]
     siguiente_ciudad[i][j] = ciudad2
     siguiente_ciudad[j][i] = ciudad1
-
+    
+# Imprimir una matriz de distancias o siguiente ciudad
 def imprimir_matriz(matriz):
     for fila in matriz:
         print(" ".join(map(str, fila)))
@@ -102,36 +107,46 @@ def main():
     floyd_warshall(dist, siguiente_ciudad, len(ciudades))
     
     while True:
+        # Mostrar el menú de opciones al usuario
         print("\nMenú:")
         print("1. Encontrar la ruta más corta entre dos ciudades")
         print("2. Encontrar el centro del grafo")
         print("3. Modificar el grafo")
         print("4. Salir")
         
+        # Solicitar al usuario que ingrese una opción del menú
         opcion = input("Ingrese su opción: ")
         
+        
+        # Opción 1: Encontrar la ruta más corta entre dos ciudades
+
         if opcion == '1':
             origen = input("Ingrese la ciudad de origen: ")
             destino = input("Ingrese la ciudad de destino: ")
             camino = construir_camino(siguiente_ciudad, indice_ciudad, origen, destino)
             if camino:
+            # Si se encontró un camino, mostrar la ruta y el tiempo total de viaje
                 print(f"La ruta más corta de {origen} a {destino} es: {' -> '.join(camino)}")
                 print(f"Tiempo total de viaje: {dist[indice_ciudad[origen]][indice_ciudad[destino]]}")
             else:
                 print("No se encontró ruta.")
         
         elif opcion == '2':
+            # Opción 2: Encontrar el centro del grafo
             centro = encontrar_centro_grafo(dist, ciudades)
             print(f"El centro del grafo es: {centro}")
         
         elif opcion == '3':
+            # Opción 3: Modificar el grafo
             print("Opciones de modificación:")
             print("a. Interrumpir tráfico entre ciudades")
             print("b. Establecer una nueva conexión")
             print("c. Establecer condición climática entre ciudades")
+            # Solicitar al usuario que ingrese una sub-opción de modificación
             sub_opcion = input("Ingrese su opción: ")
             
             if sub_opcion == 'a':
+                # Sub-opción a: Interrumpir tráfico entre ciudades
                 ciudad1 = input("Ingrese la primera ciudad: ")
                 ciudad2 = input("Ingrese la segunda ciudad: ")
                 actualizar_grafo(dist, siguiente_ciudad, indice_ciudad, ciudad1, ciudad2, [INF, INF, INF, INF], condicion_climatica)
@@ -139,6 +154,7 @@ def main():
                 print("Interrupción de tráfico actualizada.")
             
             elif sub_opcion == 'b':
+                # Sub-opción b: Establecer una nueva conexión
                 ciudad1 = input("Ingrese la primera ciudad: ")
                 ciudad2 = input("Ingrese la segunda ciudad: ")
                 tiempos = list(map(int, input("Ingrese los tiempos de viaje (normal, lluvia, nieve, tormenta) separados por espacio: ").split()))
@@ -147,14 +163,18 @@ def main():
                 print("Nueva conexión establecida.")
             
             elif sub_opcion == 'c':
+                # Sub-opción c: Establecer condición climática entre ciudades
                 ciudad1 = input("Ingrese la primera ciudad: ")
                 ciudad2 = input("Ingrese la segunda ciudad: ")
+                # Pedir la condición climática a establecer
                 condicion_climatica = int(input("Ingrese la condición climática (0: normal, 1: lluvia, 2: nieve, 3: tormenta): "))
+                 # Actualizar el grafo con los tiempos de viaje bajo la nueva condición climática
                 actualizar_grafo(dist, siguiente_ciudad, indice_ciudad, ciudad1, ciudad2, aristas[ciudad1][ciudad2], condicion_climatica)
                 floyd_warshall(dist, siguiente_ciudad, len(ciudades))
                 print("Condición climática actualizada.")
         
         elif opcion == '4':
+            # Opción 4: Salir del programa
             print("Saliendo del programa.")
             break
         
