@@ -69,3 +69,85 @@ def encontrar_centro_grafo(dist, ciudades):
     min_excentricidad = min(excentricidad)
     centro = ciudades[excentricidad.index(min_excentricidad)]
     return centro
+
+def actualizar_grafo(dist, siguiente_ciudad, indice_ciudad, ciudad1, ciudad2, tiempos, condicion_climatica):
+    i, j = indice_ciudad[ciudad1], indice_ciudad[ciudad2]
+    dist[i][j] = tiempos[condicion_climatica]
+    dist[j][i] = tiempos[condicion_climatica]
+    siguiente_ciudad[i][j] = ciudad2
+    siguiente_ciudad[j][i] = ciudad1
+
+def imprimir_matriz(matriz):
+    for fila in matriz:
+        print(" ".join(map(str, fila)))
+
+def main():
+    nombre_archivo = 'logistica.txt'
+    ciudades, aristas = leer_grafo(nombre_archivo)
+    condicion_climatica = 0
+    
+    dist, siguiente_ciudad, indice_ciudad = inicializar_matrices(ciudades, aristas, condicion_climatica)
+    floyd_warshall(dist, siguiente_ciudad, len(ciudades))
+    
+    while True:
+        print("\nMenú:")
+        print("1. Encontrar la ruta más corta entre dos ciudades")
+        print("2. Encontrar el centro del grafo")
+        print("3. Modificar el grafo")
+        print("4. Salir")
+        
+        opcion = input("Ingrese su opción: ")
+        
+        if opcion == '1':
+            origen = input("Ingrese la ciudad de origen: ")
+            destino = input("Ingrese la ciudad de destino: ")
+            camino = construir_camino(siguiente_ciudad, indice_ciudad, origen, destino)
+            if camino:
+                print(f"La ruta más corta de {origen} a {destino} es: {' -> '.join(camino)}")
+                print(f"Tiempo total de viaje: {dist[indice_ciudad[origen]][indice_ciudad[destino]]}")
+            else:
+                print("No se encontró ruta.")
+        
+        elif opcion == '2':
+            centro = encontrar_centro_grafo(dist, ciudades)
+            print(f"El centro del grafo es: {centro}")
+        
+        elif opcion == '3':
+            print("Opciones de modificación:")
+            print("a. Interrumpir tráfico entre ciudades")
+            print("b. Establecer una nueva conexión")
+            print("c. Establecer condición climática entre ciudades")
+            sub_opcion = input("Ingrese su opción: ")
+            
+            if sub_opcion == 'a':
+                ciudad1 = input("Ingrese la primera ciudad: ")
+                ciudad2 = input("Ingrese la segunda ciudad: ")
+                actualizar_grafo(dist, siguiente_ciudad, indice_ciudad, ciudad1, ciudad2, [INF, INF, INF, INF], condicion_climatica)
+                floyd_warshall(dist, siguiente_ciudad, len(ciudades))
+                print("Interrupción de tráfico actualizada.")
+            
+            elif sub_opcion == 'b':
+                ciudad1 = input("Ingrese la primera ciudad: ")
+                ciudad2 = input("Ingrese la segunda ciudad: ")
+                tiempos = list(map(int, input("Ingrese los tiempos de viaje (normal, lluvia, nieve, tormenta) separados por espacio: ").split()))
+                actualizar_grafo(dist, siguiente_ciudad, indice_ciudad, ciudad1, ciudad2, tiempos, condicion_climatica)
+                floyd_warshall(dist, siguiente_ciudad, len(ciudades))
+                print("Nueva conexión establecida.")
+            
+            elif sub_opcion == 'c':
+                ciudad1 = input("Ingrese la primera ciudad: ")
+                ciudad2 = input("Ingrese la segunda ciudad: ")
+                condicion_climatica = int(input("Ingrese la condición climática (0: normal, 1: lluvia, 2: nieve, 3: tormenta): "))
+                actualizar_grafo(dist, siguiente_ciudad, indice_ciudad, ciudad1, ciudad2, aristas[ciudad1][ciudad2], condicion_climatica)
+                floyd_warshall(dist, siguiente_ciudad, len(ciudades))
+                print("Condición climática actualizada.")
+        
+        elif opcion == '4':
+            print("Saliendo del programa.")
+            break
+        
+        else:
+            print("Opción inválida. Por favor, intente de nuevo.")
+
+if __name__ == "__main__":
+    main()
