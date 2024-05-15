@@ -1,48 +1,60 @@
 import sys
 
+# Definir una constante para representar el infinito
 INF = float('inf')
 
 def leer_grafo(nombre_archivo):
+    # Leer el archivo y almacenar los datos en un conjunto de ciudades y un diccionario de aristas
     with open(nombre_archivo, 'r') as archivo:
         lineas = archivo.readlines()
     
-    ciudades = set()
-    aristas = {}
+    ciudades = set()  # Conjunto para almacenar los nombres de las ciudades
+    aristas = {}  # Diccionario para almacenar los tiempos de viaje entre ciudades
     
     for linea in lineas:
+        # Separar los datos de cada línea y convertir los tiempos a enteros
         datos = linea.strip().split()
         ciudad1, ciudad2 = datos[0], datos[1]
         tiempos = list(map(int, datos[2:]))
         
+        # Agregar las ciudades al conjunto
         ciudades.add(ciudad1)
         ciudades.add(ciudad2)
         
+        # Inicializar las entradas en el diccionario de aristas si no existen
         if ciudad1 not in aristas:
             aristas[ciudad1] = {}
         if ciudad2 not in aristas:
             aristas[ciudad2] = {}
         
+        # Asignar los tiempos de viaje a las aristas en ambas direcciones
         aristas[ciudad1][ciudad2] = tiempos
         aristas[ciudad2][ciudad1] = tiempos  # Asumiendo un grafo no dirigido
     
+    # Retornar la lista de ciudades y el diccionario de aristas
     return list(ciudades), aristas
 
 def inicializar_matrices(ciudades, aristas, condicion_climatica=0):
+    # Inicializar las matrices de distancia y siguiente ciudad
     n = len(ciudades)
-    dist = [[INF] * n for _ in range(n)]
-    siguiente_ciudad = [[None] * n for _ in range(n)]
+    dist = [[INF] * n for _ in range(n)]  # Matriz de distancias
+    siguiente_ciudad = [[None] * n for _ in range(n)]  # Matriz de siguiente ciudad
     
+    # Crear un diccionario para mapear los nombres de las ciudades a sus índices
     indice_ciudad = {ciudad: idx for idx, ciudad in enumerate(ciudades)}
     
+    # La distancia de una ciudad a sí misma es 0
     for i in range(n):
         dist[i][i] = 0
     
+    # Llenar la matriz de distancias con los tiempos de viaje proporcionados
     for ciudad1 in aristas:
         for ciudad2 in aristas[ciudad1]:
             i, j = indice_ciudad[ciudad1], indice_ciudad[ciudad2]
             dist[i][j] = aristas[ciudad1][ciudad2][condicion_climatica]
             siguiente_ciudad[i][j] = ciudad2
     
+    # Retornar las matrices y el diccionario de índices de ciudades
     return dist, siguiente_ciudad, indice_ciudad
 
 def floyd_warshall(dist, siguiente_ciudad, n):
